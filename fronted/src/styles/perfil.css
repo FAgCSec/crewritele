@@ -1,0 +1,54 @@
+.foto-perfil-container {
+  display: flex;
+  align-items: center;
+  margin: 20px 0 40px 0;
+}
+
+.foto-perfil {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 1px solid #333;
+  object-fit: contain;
+  margin-right: 50px;
+}
+
+#editarUsuarioForm {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+#editarUsuarioForm input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#editarUsuarioForm button {
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+#editarUsuarioForm button:hover {
+  background-color: #222;
+}
+
+.otras-opciones {
+  margin-bottom: 150px;
+
+  p {
+    margin: 16px 0 4px 0;
+  }
+}

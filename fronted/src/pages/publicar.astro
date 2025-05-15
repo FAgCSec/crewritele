@@ -1,0 +1,124 @@
+---
+import "../styles/publicar.css";
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Container from "../components/Container.astro";
+
+import { isLoggedIn } from "../utils/auth.js";
+
+const token = Astro.cookies.get("token")?.value;
+const [auth, data] = await isLoggedIn(token);
+
+if (auth === false || data === null) return Astro.redirect("/login");
+
+const { userId } = data;
+const res = await fetch(`https://localhost:3001/api/usuarios/${userId}`);
+const [user] = await res.json();
+---
+
+<Layout>
+  <Header user={user} />
+  <Container>
+    <h2>Escribe tu Noticia</h2>
+
+    <form id="noticiasForm">
+      <label for="titulo">Titulo de la Noticia:</label>
+      <input type="text" id="titulo" name="titulo" required="" />
+
+      <label for="foto">Imagen:</label>
+      <input type="file" id="foto" accept="image/*" required="" />
+
+      <label for="contenido">Contenido de la Noticia:</label>
+      <textarea rows="3" name="contenido" id="contenido" required=""></textarea>
+
+      <button
+        data-user-id={userId}
+        id="boton-publicar"
+        class="boton-publicar-noticia"
+        type="submit">Publicar Noticia</button
+      >
+    </form>
+  </Container>
+</Layout>
+
+<script>
+  import Swal from "sweetalert2";
+
+  const noticiasForm = document.getElementById(
+    "noticiasForm"
+  ) as HTMLFormElement;
+  const botonPublicar = document.getElementById(
+    "boton-publicar"
+  ) as HTMLButtonElement;
+  const userId = botonPublicar?.getAttribute("data-user-id") as string;
+
+  noticiasForm?.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    // Obtener los valores del formulario
+    const titulo = document.getElementById("titulo") as HTMLInputElement;
+    const contenido = document.getElementById("contenido") as HTMLInputElement;
+    const foto = document.getElementById("foto") as HTMLInputElement;
+
+    if (!titulo || !contenido || !foto || foto.files == null) {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Todos los campos son obligatorios",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("titulo", titulo.value);
+    formData.append("contenido", contenido.value);
+    formData.append("autor_id", userId);
+    formData.append("fotoNoticia", foto.files[0]);
+
+    botonPublicar.textContent = "Subiendo Noticia...";
+    botonPublicar.disabled = true;
+
+    try {
+      const response = await fetch("https://localhost:3001/api/noticias", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Noticia publicada correctamente",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+
+        botonPublicar.textContent = "Publicar Noticia";
+        botonPublicar.disabled = false;
+        noticiasForm.reset();
+      } else {
+        const error = await response.json();
+
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: `Error: ${error.error || "Error al publicar la noticia"}`,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+    } catch (error) {
+      console.error("Error en el registro:", error);
+
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Ocurrió un error al publicar la noticia. Intente de nuevo",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+  });
+</script>

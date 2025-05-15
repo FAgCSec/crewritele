@@ -1,0 +1,162 @@
+---
+import "../styles/login.css";
+import Layout from "../layouts/Layout.astro";
+
+import { getSession } from "auth-astro/server";
+const session = await getSession(Astro.request);
+let errorSessionGoogle = false;
+
+if (session) {
+  try {
+    const res = await fetch(
+      "https://localhost:3001/api/usuarios/login/google",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: session?.user,
+        }),
+      },
+    );
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    Astro.cookies.set("token", data.token);
+    return Astro.redirect("/");
+  } catch (error) {
+    errorSessionGoogle = true;
+  }
+}
+---
+
+<script>
+  import Swal from "sweetalert2";
+
+  document
+    .getElementById("login-form")
+    ?.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email") as HTMLInputElement;
+      const password = document.getElementById("password") as HTMLInputElement;
+
+      if (!email || !password) {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: "Por favor, llena todos los campos",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        return;
+      }
+
+      const response = await fetch(
+        "https://localhost:3001/api/usuarios/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            correo: email.value,
+            contrasena: password.value,
+          }),
+        },
+      );
+      const data = await response.json();
+      console.log(data);
+
+      if (data.error) {
+        // Limpiar campos
+        email.value = "";
+        password.value = "";
+
+        // Enfocar de nuevo el email (o password si prefieres)
+        email.focus();
+
+        // Mostrar alerta centrada sin afectar layout
+        await Swal.fire({
+          position: "center",
+          icon: "error",
+          title: data.error,
+          showConfirmButton: false,
+          timer: 1500,
+          backdrop: true, // se asegura de oscurecer fondo sin mover layout
+        });
+
+        return;
+      } else {
+        document.cookie = `token=${data.token}; path=/; secure`;
+        localStorage.setItem("userId", data.userId);
+        console.log(
+          "Usuario logueado, ID guardado en localStorage:",
+          localStorage.getItem("userId"),
+        );
+
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 3000);
+      }
+    });
+
+  // Iniciar sesion con google
+  const { signIn } = await import("auth-astro/client");
+
+  const loginGoogleButton = document.querySelector(
+    "#login-google",
+  ) as HTMLButtonElement;
+  loginGoogleButton.onclick = () => signIn("google");
+</script>
+
+<Layout title="Iniciar Sesion - CreWriteLe">
+  <div class="login-wrapper">
+    <div class="login-container">
+      <h1>CreWriteLe</h1>
+      <h2>Iniciar Sesión</h2>
+      <form id="login-form">
+        <input
+          id="email"
+          type="email"
+          name="email"
+          placeholder="Correo Electrónico"
+          required
+        />
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Contraseña"
+          required
+        />
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+
+      <span>o tambien puedes</span>
+
+      <button id="login-google" class="google-btn">
+        <img src="/icons/google.svg" alt="Google Logo" />
+        Iniciar sesión con Google
+      </button>
+
+      {
+        errorSessionGoogle && (
+          <div class="info-google">
+            <img src="/icons/info.svg" alt="" />
+            <strong>
+              Error al iniciar sesión con Google. El ingreso con Google solo
+              está disponible para usuarios ya registrados.
+            </strong>
+          </div>
+        )
+      }
+
+      <p>
+        ¿No tienes una cuenta? <a class="link" href="/register">Regístrate</a>
+      </p>
+    </div>
+  </div>
+</Layout>

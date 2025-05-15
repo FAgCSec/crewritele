@@ -1,0 +1,82 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #dad3d3;
+    font-family: Arial, sans-serif;
+}
+.login-container {
+    background: rgb(238, 235, 235);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.login-container h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+.login-container h2 {
+    margin-bottom: 20px;
+}
+.login-container input {
+    width: 95%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+.login-container button:hover {
+    background-color: #222;
+}
+.google-btn {
+    margin-block: 10px;
+}
+.google-btn img {
+    width: 20px;
+    height: 20px;
+}
+.info-google {
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 6px;
+    border-radius: 5px;
+    background-color: #019be2;
+    color: #fff;
+
+    strong {
+        field-sizing: content;
+        text-align: start;
+    }
+}
+.login-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10; /* superior a fondo pero por debajo de SweetAlert */
+  }
+
+  h1,h2{
+    font-family: 'Courier New', Courier, monospace;
+  }
+  

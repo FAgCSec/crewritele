@@ -1,0 +1,44 @@
+---
+import "../styles/header.css";
+
+import { isLoggedIn } from "../utils/auth.js";
+
+const token = Astro.cookies.get("token")?.value;
+const [auth, data] = await isLoggedIn(token);
+
+if (auth === false || data === null) return Astro.redirect("/login");
+
+const res = await fetch(`https://localhost:3001/api/usuarios/${data.userId}`);
+const [user] = await res.json();
+
+const { rol_id, nombre_rol } = user;
+---
+
+<header class="header">
+  <div class="logo"><a href="/">CreWriteLe</a></div>
+  <nav class="nav">
+    <a href="/perfil">Perfil</a>
+    <a href="/publicar">Publicar Noticias</a>
+
+    {
+      rol_id === 1 && nombre_rol === "Administrador" && (
+        <>
+          <a href="/reportes">Reportes</a> <!-- Nueva ruta añadida aquí -->
+        </>
+      )
+    }
+
+    <button class="logout">Cerrar Sesión</button>
+  </nav>
+</header>
+
+<script>
+  const { signOut } = await import("auth-astro/client");
+  const botonCerrarSesion = document.querySelector(".logout");
+
+  botonCerrarSesion?.addEventListener("click", () => {
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    signOut();
+    window.location.href = "/login";
+  });
+</script>

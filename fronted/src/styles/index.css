@@ -1,0 +1,217 @@
+/* General */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  background-color: #f2f2f2;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container general */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Lista de noticias */
+.noticias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 0;
+  list-style: none;
+}
+
+/* Tarjeta de noticia */
+.noticia {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+.noticia:hover {
+  transform: translateY(-4px);
+}
+
+/* Imagen de portada */
+.img-portada {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+/* Contenido de noticia */
+.noticia-contenido {
+  padding: 24px;
+}
+
+.noticia-titulo {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #111;
+}
+
+.noticia-texto {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 1.5rem;
+  max-height: 300px;
+  overflow: auto;
+  white-space: break-spaces;
+}
+
+/* Footer de noticia */
+.noticia-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+/* Info del autor */
+.noticia-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.noticia-autor-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
+
+.noticia-autor {
+  font-weight: 500;
+  color: #111;
+}
+
+.noticia-username {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Fecha */
+.noticia-fecha {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Botones */
+.noticia-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-editar,
+.btn-eliminar {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-editar {
+  background-color: #007bff;
+}
+.btn-editar:hover {
+  background-color: #0069d9;
+}
+
+.btn-eliminar {
+  background-color: #dc3545;
+}
+.btn-eliminar:hover {
+  background-color: #c82333;
+}
+
+/* Botón de comentarios */
+.btn-toggle-comentarios {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 24px 16px;
+}
+.btn-toggle-comentarios:hover {
+  background-color: #e0e0e0;
+}
+
+/* Contenedor de comentarios */
+.comentarios-container {
+  background-color: #fafafa;
+  padding: 16px 24px;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 12px 12px;
+  max-width: 900px;
+  margin: 0 auto 20px;
+}
+
+.comentarios h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: #444;
+}
+
+.comentarios ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.comentarios li {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* Formulario comentar */
+.comentar {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  gap: 10px;
+}
+
+.comentar textarea {
+  resize: vertical;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  min-height: 60px;
+}
+
+.comentar button {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.comentar button:hover {
+  background-color: #218838;
+}

@@ -1,0 +1,106 @@
+---
+import "../styles/reportes.css";
+import Header from "../components/Header.astro";
+import Layout from "../layouts/Layout.astro";
+import { isLoggedIn } from "../utils/auth.js";
+
+const token = Astro.cookies.get("token")?.value;
+const [auth, data] = await isLoggedIn(token);
+
+if (!auth || !data) return Astro.redirect("/login");
+
+const reportes = [
+  { value: "noticias-comentarios-promedio", label: "Noticias con más comentarios que el promedio" },
+  { value: "usuarios-comentaron-todas-noticias", label: "Usuarios que comentaron en todas las noticias de un autor" },
+  { value: "ultimo-comentario-por-usuario", label: "Último comentario por usuario" },
+  { value: "comentarios-por-noticia", label: "Cantidad de comentarios por noticia" }
+];
+---
+<Layout>
+  <Header />
+
+  <main class="reportes-container">
+    <h1 class="titulo-reportes">📊 Reportes del sistema</h1>
+
+    <div class="selector-reporte">
+      <label for="tipo-reporte">Selecciona un reporte:</label>
+      <select id="tipo-reporte">
+        {reportes.map((r) => (
+          <option value={r.value}>{r.label}</option>
+        ))}
+      </select>
+
+      <div id="campo-autor-id" style="display: none; margin-top: 10px;">
+        <label for="autor-id">ID del autor:</label>
+        <input type="text" id="autor-id" placeholder="Ej: 123" />
+      </div>
+
+      <button id="ver-reporte">Ver Reporte</button>
+    </div>
+
+    <div id="resultado-reporte" class="tabla-resultados"></div>
+  </main>
+
+  <script type="module">
+    const tipoReporte = document.getElementById("tipo-reporte");
+    const campoAutorId = document.getElementById("campo-autor-id");
+
+    tipoReporte.addEventListener("change", () => {
+      campoAutorId.style.display = tipoReporte.value === "usuarios-comentaron-todas-noticias" ? "block" : "none";
+    });
+
+    document.getElementById("ver-reporte").addEventListener("click", async () => {
+      const tipo = tipoReporte.value;
+      const contenedor = document.getElementById("resultado-reporte");
+      let url = `https://localhost:3001/reportes/${tipo}`;
+
+      if (tipo === "usuarios-comentaron-todas-noticias") {
+        const autorId = document.getElementById("autor-id").value.trim();
+        if (!autorId) {
+          contenedor.innerHTML = "<p class='error'>Por favor, ingresa el ID del autor.</p>";
+          return;
+        }
+        url += `/${autorId}`;
+      }
+
+      contenedor.innerHTML = "<p class='cargando'>Cargando...</p>";
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Si la respuesta no es exitosa, mostramos el mensaje de error.
+          if (data.message) {
+            contenedor.innerHTML = `<p class='error'>${data.message}</p>`;
+          } else {
+            contenedor.innerHTML = "<p class='error'>Error desconocido al cargar el reporte.</p>";
+          }
+          return;
+        }
+
+        if (!data.length) {
+          contenedor.innerHTML = "<p class='no-datos'>No se encontraron resultados.</p>";
+          return;
+        }
+
+        const encabezados = Object.keys(data[0]);
+        const tablaHTML = `
+          <table>
+            <thead>
+              <tr>${encabezados.map(col => `<th>${col}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>${encabezados.map(col => `<td>${row[col]}</td>`).join("")}</tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+        contenedor.innerHTML = tablaHTML;
+      } catch (err) {
+        contenedor.innerHTML = "<p class='error'>Error al cargar el reporte. Intenta nuevamente más tarde.</p>";
+      }
+    });
+  </script>
+</Layout>

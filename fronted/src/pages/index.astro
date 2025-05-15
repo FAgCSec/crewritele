@@ -1,0 +1,459 @@
+---
+import "../styles/index.css";
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Container from "../components/Container.astro";
+
+import { isLoggedIn } from "../utils/auth.js";
+
+const token = Astro.cookies.get("token")?.value;
+const [auth, data] = await isLoggedIn(token);
+
+if (auth === false || data === null) return Astro.redirect("/login");
+
+const res = await fetch("https://localhost:3001/api/noticias");
+const noticias = await res.json();
+
+const { userId } = data;
+const resUser = await fetch(`https://localhost:3001/api/usuarios/${userId}`);
+const [user] = await resUser.json();
+const { rol_id, nombre_rol } = user;
+
+let mostrarContenido = true;
+
+if (!userId) {
+  console.error("No se encuentra userId.");
+  mostrarContenido = false;
+}
+---
+
+{
+  mostrarContenido && (
+    <Layout>
+      <Header />
+
+      <Container>
+        <ul class="noticias-list">
+          {noticias.length === 0 ? (
+            <li>No hay noticias</li>
+          ) : (
+            noticias.map((noticia: any) => {
+              const {
+                id: noticiaId,
+                autor_id,
+                titulo,
+                contenido,
+                fecha_publicacion,
+                id_foto_noticia,
+                nombre_usuario,
+                ruta_foto_perfil,
+                nombre,
+                apellido,
+                comentarios,
+              } = noticia;
+
+              const fotoPerfil = ruta_foto_perfil
+                ? `https://localhost:3001/api/usuarios/${autor_id}/foto`
+                : "user-placeholder.png";
+
+              return (
+                <li class="noticia" data-noticia-id={noticiaId}>
+                  {id_foto_noticia && (
+                    <img
+                      class="img-portada"
+                      src={`https://imgur.com/${id_foto_noticia}.png`}
+                      alt={`Imagen de la noticia: ${titulo}`}
+                    />
+                  )}
+
+                  <div class="noticia-contenido">
+                    <h1 class="noticia-titulo">{titulo}</h1>
+                    <p class="noticia-texto">{contenido}</p>
+
+                    <footer class="noticia-footer">
+                      <div class="noticia-meta">
+                        <img
+                          class="noticia-autor-foto"
+                          src={fotoPerfil}
+                          alt="Foto de Perfil"
+                          onerror="this.src='user-placeholder.png'"
+                        />
+                        <div>
+                          <span class="noticia-autor">{`${nombre} ${apellido}`}</span>
+                          <span class="noticia-username">
+                            @{nombre_usuario}
+                          </span>
+                        </div>
+                      </div>
+
+                      <time class="noticia-fecha">{fecha_publicacion}</time>
+
+                      <div class="noticia-acciones">
+                        {((rol_id === 1 && nombre_rol === "Administrador") ||
+                          userId === autor_id) && (
+                          <button
+                            data-noticia-id={noticiaId}
+                            id="btn-eliminar-noticia"
+                            class="btn-eliminar"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                        {userId === autor_id && (
+                          <button
+                            data-noticia-id={noticiaId}
+                            id="btn-editar-noticia"
+                            class="btn-editar"
+                          >
+                            Editar
+                          </button>
+                        )}
+                      </div>
+                    </footer>
+                  </div>
+                  <div class="noticia-interacciones-container">
+                    <button class="btn-toggle-comentarios">
+                      💬 Comentarios
+                    </button>
+
+                    <div class="comentarios-container" style="display: none;">
+                      <div class="comentarios">
+                        <h3>Comentarios</h3>
+                        <ul>
+                          {comentarios && comentarios.length > 0 ? (
+                            comentarios.map((comentario: any) => (
+                              <li>
+                                <p>
+                                  <strong>{comentario.usuario_nombre}</strong>:{" "}
+                                  {comentario.texto}
+                                </p>
+                              </li>
+                            ))
+                          ) : (
+                            <li>No hay comentarios aún.</li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <div class="comentar">
+                        <form class="form-comentar" data-noticia-id={noticiaId}>
+                          <textarea
+                            placeholder="Escribe tu comentario"
+                            required
+                          />
+                          <button type="submit">Comentar</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </Container>
+    </Layout>
+  )
+}
+
+<script>
+  import Swal from "sweetalert2";
+
+  document.querySelectorAll(".btn-toggle-comentarios").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const noticiaElement = target.closest(".noticia") as HTMLElement | null;
+
+      if (!noticiaElement) {
+        console.error("No se encontró el contenedor de la noticia.");
+        return;
+      }
+
+      const noticiaId = noticiaElement.getAttribute("data-noticia-id");
+      if (!noticiaId) {
+        console.error("No se encontró el ID de la noticia.");
+        return;
+      }
+
+      const contenedor = noticiaElement.querySelector(".comentarios-container");
+      if (!(contenedor instanceof HTMLElement)) {
+        console.error("No se encontró el contenedor de comentarios.");
+        return;
+      }
+
+      const comentariosList = contenedor.querySelector(".comentarios ul");
+      if (!comentariosList) {
+        console.error("No se encontró la lista de comentarios.");
+        return;
+      }
+
+      // Obtener comentarios de la API
+      try {
+        const resComentarios = await fetch(
+          `https://localhost:3001/api/comentarios/${noticiaId}`,
+        );
+        const comentarios = await resComentarios.json();
+
+        comentariosList.innerHTML = ""; // Limpia la lista de comentarios antes de agregar nuevos
+
+        if (Array.isArray(comentarios) && comentarios.length > 0) {
+          comentarios.forEach((comentario) => {
+            const {
+              id,
+              usuario_nombre,
+              contenido,
+              fecha_publicacion,
+              autor_id,
+            } = comentario;
+
+            const soyAutor =
+              localStorage.getItem("userId") === autor_id.toString();
+
+            const li = document.createElement("li");
+            li.classList.add("comentario");
+            li.dataset.comentarioId = id.toString();
+            li.innerHTML = `
+            <p><strong>${usuario_nombre}</strong>: <span class="comentario-texto">${contenido}</span></p>
+            <span class="fecha-comentario">${new Date(fecha_publicacion).toLocaleString()}</span>
+            ${
+              soyAutor
+                ? `<button class="btn-editar-comentario">✏️</button>
+                   <button class="btn-eliminar-comentario">🗑️</button>`
+                : ""
+            }
+          `;
+            comentariosList.appendChild(li);
+            asignarEventosComentario(li); // ✅ Reutilizado
+          });
+        } else {
+          // Si no hay comentarios, mostrar el mensaje "No hay comentarios aún"
+          const noComentarios = document.createElement("li");
+          noComentarios.classList.add("sin-comentarios");
+          noComentarios.textContent = "No hay comentarios aún.";
+          comentariosList.appendChild(noComentarios);
+        }
+      } catch (error) {
+        console.error("Error al obtener comentarios:", error);
+      }
+
+      contenedor.style.display =
+        contenedor.style.display === "none" ? "block" : "none";
+    });
+  });
+
+  // Enviar comentario
+  document.querySelectorAll(".form-comentar").forEach((form) => {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const noticiaId = form.getAttribute("data-noticia-id");
+      const textarea = form.querySelector("textarea");
+      const comentarioTexto = textarea?.value;
+
+      if (comentarioTexto && noticiaId) {
+        const res = await fetch(`https://localhost:3001/api/comentarios`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            autor_id: localStorage.getItem("userId"),
+            contenido: comentarioTexto,
+            noticia_id: noticiaId,
+          }),
+        });
+
+        if (res.ok) {
+          const nuevoComentario = await res.json();
+
+          Swal.fire(
+            "Comentario agregado",
+            "Tu comentario ha sido publicado.",
+            "success",
+          );
+          textarea.value = "";
+
+          const lista = form
+            .closest(".comentarios-container")
+            ?.querySelector(".comentarios ul");
+
+          if (lista) {
+            // Elimina el mensaje "No hay comentarios aún" si existe
+            const sinComentarios = lista.querySelector(".sin-comentarios");
+            if (sinComentarios) {
+              sinComentarios.remove();
+            }
+
+            // Agrega el nuevo comentario a la lista
+            const nuevo = document.createElement("li");
+            nuevo.classList.add("comentario");
+            nuevo.dataset.comentarioId = nuevoComentario.id;
+            nuevo.innerHTML = `
+            <p><strong>Tú</strong>: <span class="comentario-texto">${comentarioTexto}</span></p>
+            <span class="fecha-comentario">${new Date().toLocaleString()}</span>
+            <button class="btn-editar-comentario">✏️</button>
+            <button class="btn-eliminar-comentario">🗑️</button>
+          `;
+            lista.appendChild(nuevo);
+            asignarEventosComentario(nuevo);
+          }
+        }
+      }
+    });
+  });
+
+  // Eliminar noticia
+  document.querySelectorAll(".btn-eliminar").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const button = (e.currentTarget as HTMLElement).closest(
+        "button",
+      ) as HTMLButtonElement | null;
+      const noticiaId = button?.dataset.noticiaId;
+
+      if (!noticiaId) {
+        console.error("No se encontró el ID de la noticia.");
+        return;
+      }
+
+      if (!noticiaId) {
+        console.error("No se encontró el ID de la noticia.");
+        return;
+      }
+
+      const result = await Swal.fire({
+        title: "¿Quieres eliminar esta noticia?",
+        text: "¡No podrás revertir esto!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        const res = await fetch(
+          `https://localhost:3001/api/noticias/${noticiaId}`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+
+        if (res.ok) {
+          const noticia = (e.currentTarget as HTMLElement).closest(
+            ".noticia",
+          ) as HTMLElement | null;
+          noticia?.remove();
+
+          const noticiasList = document.querySelector(".noticias-list");
+          if (
+            noticiasList &&
+            noticiasList.querySelectorAll(".noticia").length === 0
+          ) {
+            const li = document.createElement("li");
+            li.textContent = "No hay noticias";
+            noticiasList.appendChild(li);
+          }
+
+          Swal.fire("¡Eliminada!", "La noticia ha sido eliminada.", "success");
+        }
+      }
+    });
+  });
+
+  // Función reutilizable para asignar eventos a comentarios
+  function asignarEventosComentario(li: HTMLElement) {
+    const btnEliminar = li.querySelector(".btn-eliminar-comentario");
+    const btnEditar = li.querySelector(".btn-editar-comentario");
+
+    if (btnEliminar) {
+      btnEliminar.addEventListener("click", async (e) => {
+        const comentarioLi = (e.currentTarget as HTMLElement).closest("li");
+        const comentarioId = comentarioLi?.dataset.comentarioId;
+
+        if (!comentarioId) return;
+
+        const confirm = await Swal.fire({
+          title: "¿Eliminar comentario?",
+          text: "Esta acción no se puede deshacer.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Eliminar",
+          cancelButtonText: "Cancelar",
+        });
+
+        if (confirm.isConfirmed) {
+          const res = await fetch(
+            `https://localhost:3001/api/comentarios/${comentarioId}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                autor_id: localStorage.getItem("userId"),
+              }),
+            },
+          );
+
+          if (res.ok) {
+            comentarioLi?.remove();
+            Swal.fire("Eliminado", "El comentario fue eliminado.", "success");
+
+            const comentariosList = comentarioLi?.parentElement;
+            const restantes =
+              comentariosList?.querySelectorAll("li.comentario");
+
+            if (!restantes || restantes.length === 0) {
+              const liVacio = document.createElement("li");
+              liVacio.textContent = "No hay comentarios aún.";
+              liVacio.classList.add("sin-comentarios");
+              comentariosList?.appendChild(liVacio);
+            }
+          } else {
+            Swal.fire("Error", "No se pudo eliminar el comentario.", "error");
+          }
+        }
+      });
+    }
+
+    if (btnEditar) {
+      btnEditar.addEventListener("click", async (e) => {
+        const comentarioLi = (e.currentTarget as HTMLElement).closest("li");
+
+        const comentarioId = comentarioLi?.dataset.comentarioId;
+        const textoSpan = comentarioLi?.querySelector(".comentario-texto");
+
+        if (!comentarioId || !textoSpan) return;
+
+        const nuevoContenido = await Swal.fire({
+          title: "Editar comentario",
+          input: "textarea",
+          inputValue: textoSpan.textContent || "",
+          showCancelButton: true,
+          confirmButtonText: "Guardar",
+          cancelButtonText: "Cancelar",
+        });
+
+        if (nuevoContenido.isConfirmed && nuevoContenido.value) {
+          const res = await fetch(
+            `https://localhost:3001/api/comentarios/${comentarioId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contenido: nuevoContenido.value,
+                autor_id: localStorage.getItem("userId"),
+              }),
+            },
+          );
+
+          if (res.ok) {
+            textoSpan.textContent = nuevoContenido.value;
+            Swal.fire("Actualizado", "El comentario fue editado.", "success");
+          } else {
+            Swal.fire("Error", "No se pudo editar el comentario.", "error");
+          }
+        }
+      });
+    }
+  }
+</script>

@@ -1,0 +1,38 @@
+.header {
+    background-color: #333;
+    color: white;
+    padding: 15px 160px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.header .logo {
+    font-size: 24px;
+    font-weight: bold;
+
+    a{
+        color: white;
+        text-decoration: none;
+    }
+}
+.nav {
+    display: flex;
+    gap: 20px;
+}
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+.nav a:hover {
+    text-decoration: underline;
+}
+.logout {
+    background-color: transparent;
+    color: white;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}

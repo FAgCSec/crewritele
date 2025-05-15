@@ -1,0 +1,50 @@
+.link {
+  color: #333;
+  text-decoration: none;
+}
+.link {
+  text-decoration: underline;
+}
+
+.btn-editar,
+.btn-comentar,
+.btn-ver-comentarios,
+.btn-enviar-comentario,
+.btn {
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.btn-editar:hover,
+.btn-comentar:hover,
+.btn-ver-comentarios:hover,
+.btn-enviar-comentario:hover,
+.btn:hover {
+  background-color: #555;
+}
+
+.btn-eliminar {
+  background-color: #e73b3b;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+
+  &:disabled {
+    background-color: #e73b3b5e;
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: #e73b3b5e;
+    }
+  }
+}
+
+.btn-eliminar:hover {
+  background-color: #ff0000ab;
+}

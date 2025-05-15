@@ -1,0 +1,39 @@
+#noticiasForm {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+#noticiasForm input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 18px;
+}
+
+#noticiasForm button {
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+#noticiasForm button:hover {
+  background-color: #222;
+}
+
+#contenido {
+  padding: 10px;
+  min-height: 60px;
+  field-sizing: content;
+  font-size: 18px;
+}
