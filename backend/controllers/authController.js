@@ -3,14 +3,18 @@ const Usuario = require("../models/usuario.model");
 
 // Verificar si el usuario está autenticado
 exports.verificarToken = (req, res) => {
-  const token = req.body.token || req.query.token || req.headers["token"];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
 
   if (!token) {
     return res.status(401).json({ error: "No se ha proporcionado un token" });
   }
 
+
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.error("Error al verificar token:", err.message);
       return res.status(401).json({ error: "Token inválido" });
     }
 

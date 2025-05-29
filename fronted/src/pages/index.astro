@@ -7,15 +7,18 @@ import Container from "../components/Container.astro";
 import { isLoggedIn } from "../utils/auth.js";
 
 const token = Astro.cookies.get("token")?.value;
+
 const [auth, data] = await isLoggedIn(token);
+
 
 if (auth === false || data === null) return Astro.redirect("/login");
 
-const res = await fetch("https://localhost:3001/api/noticias");
+const res = await fetch("http://backend:3001/api/noticias");
 const noticias = await res.json();
 
+
 const { userId } = data;
-const resUser = await fetch(`https://localhost:3001/api/usuarios/${userId}`);
+const resUser = await fetch(`http://backend:3001/api/usuarios/${userId}`);
 const [user] = await resUser.json();
 const { rol_id, nombre_rol } = user;
 
@@ -53,7 +56,7 @@ if (!userId) {
               } = noticia;
 
               const fotoPerfil = ruta_foto_perfil
-                ? `https://localhost:3001/api/usuarios/${autor_id}/foto`
+                ? `http://localhost:3001/api/usuarios/${autor_id}/foto`
                 : "user-placeholder.png";
 
               return (
@@ -61,7 +64,7 @@ if (!userId) {
                   {id_foto_noticia && (
                     <img
                       class="img-portada"
-                      src={`https://imgur.com/${id_foto_noticia}.png`}
+                      src={`http://imgur.com/${id_foto_noticia}.png`}
                       alt={`Imagen de la noticia: ${titulo}`}
                     />
                   )}
@@ -190,7 +193,7 @@ if (!userId) {
       // Obtener comentarios de la API
       try {
         const resComentarios = await fetch(
-          `https://localhost:3001/api/comentarios/${noticiaId}`,
+          `http://localhost:3001/api/comentarios/${noticiaId}`,
         );
         const comentarios = await resComentarios.json();
 
@@ -250,7 +253,7 @@ if (!userId) {
       const comentarioTexto = textarea?.value;
 
       if (comentarioTexto && noticiaId) {
-        const res = await fetch(`https://localhost:3001/api/comentarios`, {
+        const res = await fetch(`http://localhost:3001/api/comentarios`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -330,7 +333,7 @@ if (!userId) {
 
       if (result.isConfirmed) {
         const res = await fetch(
-          `https://localhost:3001/api/noticias/${noticiaId}`,
+          `http://localhost:3001/api/noticias/${noticiaId}`,
           {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
@@ -382,7 +385,7 @@ if (!userId) {
 
         if (confirm.isConfirmed) {
           const res = await fetch(
-            `https://localhost:3001/api/comentarios/${comentarioId}`,
+            `http://localhost:3001/api/comentarios/${comentarioId}`,
             {
               method: "DELETE",
               headers: {
@@ -435,7 +438,7 @@ if (!userId) {
 
         if (nuevoContenido.isConfirmed && nuevoContenido.value) {
           const res = await fetch(
-            `https://localhost:3001/api/comentarios/${comentarioId}`,
+            `http://localhost:3001/api/comentarios/${comentarioId}`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },

@@ -1,25 +1,26 @@
 ---
 import "../styles/login.css";
 import Layout from "../layouts/Layout.astro";
-
 import { getSession } from "auth-astro/server";
+
 const session = await getSession(Astro.request);
 let errorSessionGoogle = false;
 
-if (session) {
+// Verificamos si vienes desde el callback de Google
+const currentUrl = new URL(Astro.request.url);
+const isGoogleCallback = currentUrl.pathname === "/login" && currentUrl.searchParams.get("callback") === "google";
+
+if (session && isGoogleCallback) {
   try {
-    const res = await fetch(
-      "https://localhost:3001/api/usuarios/login/google",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: session?.user,
-        }),
+    const res = await fetch("http://backend:3001/api/usuarios/login/google", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        user: session?.user,
+      }),
+    });
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
@@ -27,6 +28,7 @@ if (session) {
     Astro.cookies.set("token", data.token);
     return Astro.redirect("/");
   } catch (error) {
+    console.log(error);
     errorSessionGoogle = true;
   }
 }
@@ -55,7 +57,7 @@ if (session) {
       }
 
       const response = await fetch(
-        "https://localhost:3001/api/usuarios/login",
+        "http://localhost:3001/api/usuarios/login",
         {
           method: "POST",
           headers: {
@@ -90,16 +92,14 @@ if (session) {
 
         return;
       } else {
-        document.cookie = `token=${data.token}; path=/; secure`;
+        document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
         localStorage.setItem("userId", data.userId);
         console.log(
           "Usuario logueado, ID guardado en localStorage:",
           localStorage.getItem("userId"),
         );
-
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 3000);
+        window.location.href = "/";
+        
       }
     });
 
@@ -109,7 +109,12 @@ if (session) {
   const loginGoogleButton = document.querySelector(
     "#login-google",
   ) as HTMLButtonElement;
-  loginGoogleButton.onclick = () => signIn("google");
+  loginGoogleButton.onclick = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("callback", "google");
+  window.history.replaceState({}, "", url); // actualiza la URL antes de iniciar sesión
+  signIn("google");
+};
 </script>
 
 <Layout title="Iniciar Sesion - CreWriteLe">

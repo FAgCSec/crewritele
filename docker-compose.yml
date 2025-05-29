@@ -1,31 +1,38 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  mysql:
-    image: mysql:8
-    container_name: mysql_bd
+  frontend:
+    build: ./fronted
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=40781889
+      - DB_NAME=noticias
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 40781889
       MYSQL_DATABASE: noticias
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - "./bd noticias.sql:/docker-entrypoint-initdb.d/noticias.sql"
     ports:
       - "3307:3306"
-
-  backend:
-    build:
-      context: ./backend
-    container_name: backend_node
-    environment:
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: 40781889
-      DB_NAME: noticias
-    ports:
-      - "3001:3001"
-    depends_on:
-      - mysql
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
-  mysql_data:
+  db-data:
+

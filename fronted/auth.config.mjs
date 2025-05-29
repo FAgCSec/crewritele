@@ -1,7 +1,6 @@
 import Google from '@auth/core/providers/google';
 import { defineConfig } from 'auth-astro';
 
-
 export default defineConfig({
   providers: [
     Google({
@@ -13,6 +12,3 @@ export default defineConfig({
   trustHost: true,
   adapter: null
 });
-
-
-console.log('AUTH_SECRET está:', import.meta.env.AUTH_SECRET);

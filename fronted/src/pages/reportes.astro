@@ -52,7 +52,7 @@ const reportes = [
     document.getElementById("ver-reporte").addEventListener("click", async () => {
       const tipo = tipoReporte.value;
       const contenedor = document.getElementById("resultado-reporte");
-      let url = `https://localhost:3001/reportes/${tipo}`;
+      let url = `http://localhost:3001/reportes/${tipo}`;
 
       if (tipo === "usuarios-comentaron-todas-noticias") {
         const autorId = document.getElementById("autor-id").value.trim();

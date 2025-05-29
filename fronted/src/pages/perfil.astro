@@ -12,7 +12,7 @@ const [auth, data] = await isLoggedIn(token);
 if (auth === false || data === null) return Astro.redirect("/login");
 
 const { userId } = data;
-const res = await fetch(`https://localhost:3001/api/usuarios/${userId}`);
+const res = await fetch(`http://backend:3001/api/usuarios/${userId}`);
 const usuarios = await res.json();
 ---
 
@@ -36,7 +36,7 @@ const usuarios = await res.json();
           } = user;
 
           const fotoPerfil = ruta_foto_perfil
-            ? `https://localhost:3001/api/usuarios/${id}/foto`
+            ? `http://localhost:3001/api/usuarios/${id}/foto`
             : "user-placeholder.png";
 
           return (
@@ -168,7 +168,7 @@ const usuarios = await res.json();
     // Subir la imagen al servidor
     try {
       const response = await fetch(
-        `https://localhost:3001/api/usuarios/${userId}/foto`,
+        `http://localhost:3001/api/usuarios/${userId}/foto`,
         {
           method: "POST",
           body: formData,
@@ -227,7 +227,7 @@ const usuarios = await res.json();
 
       try {
         const response = await fetch(
-          `https://localhost:3001/api/usuarios/${userId}/foto`,
+          `http://localhost:3001/api/usuarios/${userId}/foto`,
           {
             method: "DELETE",
           }
@@ -281,7 +281,7 @@ const usuarios = await res.json();
 
       try {
         const response = await fetch(
-          `https://localhost:3001/api/usuarios/${userId}`,
+          `http://localhost:3001/api/usuarios/${userId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -328,20 +328,20 @@ const usuarios = await res.json();
 
   // Descargar base de datos en formato SQL
   document.getElementById("descargar-db")?.addEventListener("click", () => {
-    window.location.href = "https://localhost:3001/api/descargar-db";
+    window.location.href = "http://localhost:3001/api/descargar-db";
   });
 
   // Descargar noticias en formato PDF
   const btnDescargarPdf = document.getElementById("descargar-noticias");
   btnDescargarPdf?.addEventListener("click", () => {
     const userId = btnDescargarPdf.getAttribute("data-user-id");
-    window.location.href = `https://localhost:3001/api/descargar-pdf/${userId}`;
+    window.location.href = `http://localhost:3001/api/descargar-pdf/${userId}`;
   });
 
   // Descargar noticias en formato Excel
   const btnDescargarExcel = document.getElementById("descargar-noticias-excel");
   btnDescargarExcel?.addEventListener("click", () => {
     const userId = btnDescargarExcel.getAttribute("data-user-id");
-    window.location.href = `https://localhost:3001/api/descargar-excel/${userId}`;
+    window.location.href = `http://localhost:3001/api/descargar-excel/${userId}`;
   });
 </script>

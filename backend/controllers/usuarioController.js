@@ -206,7 +206,7 @@ exports.loginUsuario = async (req, res) => {
     try {
       if (err) return res.status(500).json({ error: err.message });
       if (!usuario) return res.status(400).json({ error: "Usuario o contraseña incorrectos" });
-
+      console.log('secret de cuando se hace',process.env.JWT_SECRET)
       const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, {
         expiresIn: 86400, // 1 dia
       });
@@ -225,6 +225,7 @@ exports.loginUsuario = async (req, res) => {
 // Login usuario con su correo con google
 exports.loginUsuarioCorreo = async (req, res) => {
   const {user} = req.body
+  console.log("entro al login por google")
 
   Usuario.obtenerUnUsuarioPorCorreo(user.email, (err, usuario) => {
     try {
