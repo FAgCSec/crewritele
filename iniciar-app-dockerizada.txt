@@ -1,0 +1,66 @@
+
+INSTRUCTIVO: Cómo iniciar la app dockerizada
+===========================================
+
+✅ Requisitos previos:
+- Tener Docker y Docker Compose instalados.
+- Estar en la raíz del proyecto (donde está el archivo docker-compose.yml).
+
+🔁 Paso 1: Detener y eliminar todo lo anterior (opcional pero recomendable)
+
+    sudo docker-compose down -v
+
+Esto detiene los contenedores y elimina también los volúmenes (incluyendo la base de datos, para que se reinicialice desde init.sql).
+
+🚀 Paso 2: Iniciar la aplicación en segundo plano
+
+    sudo docker-compose up -d
+
+Esto:
+- Descargará las imágenes agudelof/crewitele-frontend:v1 y agudelof/crewitele-backend:v1 desde Docker Hub (si no están localmente).
+- Creará y ejecutará los contenedores:
+  - crewitele-proyecto-frontend-1
+  - crewitele-proyecto-backend-1
+  - crewitele-proyecto-db-1
+- Inicializará la base de datos MySQL con el archivo ./database/init.sql.
+
+🧾 Paso 3: Verificar que los contenedores están corriendo
+
+    sudo docker ps
+
+Deberías ver los contenedores:
+- crewitele-proyecto-frontend-1
+- crewitele-proyecto-backend-1
+- crewitele-proyecto-db-1
+
+📺 Paso 4: Ver logs de los servicios (opcional)
+
+Para ver todos los logs en tiempo real:
+
+    sudo docker-compose logs -f
+
+O individualmente:
+
+    sudo docker-compose logs -f backend
+    sudo docker-compose logs -f frontend
+    sudo docker-compose logs -f db
+
+🌐 Paso 5: Acceder desde el navegador
+
+- Frontend: http://localhost:4321
+- Backend: http://localhost:3001
+
+🧪 Paso 6: Verificar que la base de datos se creó
+
+Puedes conectarte al contenedor de MySQL y revisar las tablas:
+
+    sudo docker exec -it crewitele-proyecto-db-1 mysql -u root -p
+
+Contraseña: 40781889
+
+Luego dentro de MySQL:
+
+    USE noticias;
+    SHOW TABLES;
+    
+De es a forma verificaremos que se encuentren todas las tablas creadas correctamente.
